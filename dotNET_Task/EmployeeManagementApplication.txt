@@ -1,0 +1,357 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EmployeeModelLibrary
+{
+    public class CannotFindEntityException : Exception
+    {
+        private readonly string _message;
+        public CannotFindEntityException()
+        {
+            _message = "Cannot find the entity";
+        }
+        public CannotFindEntityException(string message)
+        {
+            _message = message;
+        }
+        public override string Message => _message;
+    }
+}
+--------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EmployeeModelLibrary
+{
+    public class EmptyCollectionException : Exception
+    {
+        private readonly string _message;
+        public EmptyCollectionException()
+        {
+            _message = "The collection is empty";
+        }
+        public EmptyCollectionException(string message)
+        {
+            _message = message;
+        }
+        public override string Message => _message;
+    }
+}
+-----------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EmployeeModelLibrary
+{
+    public class Department : IEquatable<Department>
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Status { get; set; }
+
+        public Department()
+        {
+            Name = string.Empty;
+            Status = string.Empty;
+        }
+
+        public Department(int id, string name,string status)
+        {
+            Id = id;
+            Name = name;
+            Status = status;
+        }
+
+        public bool Equals(Department? other)
+        {
+            return this.Name == other.Name;
+        }
+        public override string ToString()
+        {
+            return "Department Id : " + Id +
+                "\nDepartment Name : " + Name
+                + "\nDepartment Status : " + Status;
+        }
+    }
+}
+--------------------------------------
+namespace EmployeeModelLibrary
+{
+    public class Employee 
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int Age { get; set; }
+        public int DepartmentId { get; set; }
+        public float Salary { get; set; }
+        public override string ToString()
+        {
+            return "Id : "+Id+
+                "\n Name : " + Name +
+                "\n Age : " + Age +
+                "\n DepartmentId : " + DepartmentId +
+                "\n Salary : " + Salary;
+        }
+        public override bool Equals(object? obj)
+        {
+            if (obj == null)
+                return false;
+            Employee employee = obj as Employee ?? new Employee();
+            if (employee.Id == this.Id)
+            {
+                return true;
+            }
+            return false;
+        }
+        public Employee()
+        {
+            
+        }
+        //constructor chaining
+        public Employee(int id, string name, int age, int departmentId, float salary):this(name, age, departmentId, salary)
+        {
+            Id = id;
+        }
+        public Employee( string name, int age, int departmentId, float salary)
+        {
+            Name = name;
+            Age = age;
+            DepartmentId = departmentId;
+            Salary = salary;
+        }
+    }
+}
+--------------------------------------------------
+using EmployeeModelLibrary;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EmployeeDALLibrary
+{
+    public interface IRepository<K,T> where T : class
+    {
+        public T? Add(T item);
+        public IList<T>? Get();
+        public T? Get(K key);
+        public T? Update(K key, T? item);
+        public T? Delete(K key);
+    }
+}
+------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EmployeeDALLibrary
+{
+    public abstract class Repository<K, T> : IRepository<K, T> where T : class
+    {
+        protected static List<T> list = new List<T>();
+
+        public abstract IList<T>? Get();
+
+        public abstract T? Get(K key);
+        
+
+        public virtual T? Add(T item)
+        {
+           list.Add(item);
+            return item;
+        }
+
+        public T? Delete(K key)
+        {
+            var item = Get(key);
+            list.Remove(item);
+            return item;
+        }
+
+        public T? Update(K key, T? item)
+        {
+            var myItem = Get(key);
+            if (myItem != null)
+            {
+                myItem = item;
+            }
+            return item;
+        }
+    }
+}
+----------------------------------------------------
+using EmployeeModelLibrary;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EmployeeDALLibrary
+{
+    public class EmployeeRepository : Repository<int, Employee>
+    {
+        public override IList<Employee>? Get()
+        {
+            if(list.Count == 0)
+            {
+                throw new EmptyCollectionException();
+            }
+            return list;
+        }
+
+        public override Employee? Get(int key)
+        {
+            Predicate<Employee> predicate = new Predicate<Employee>(e=>e.Id==key);
+            var employee = list.Find(predicate);
+            if (employee == null)
+                throw new CannotFindEntityException("Cannot find the employee");
+            return employee;
+        }
+    }
+}
+----------------------------------------------
+using EmployeeModelLibrary;
+
+namespace EmployeeDALLibrary
+{
+    public class DepartmentRepository : Repository<int, Department>
+    {
+        public override IList<Department>? Get()
+        {
+            if(list.Count == 0)
+            {
+                throw new EmptyCollectionException("No department have been added");
+            }
+            return list;
+        }
+
+        public override Department? Get(int key)
+        {
+            var department = list.Find(d => d.Id == key);
+            if(department == null) 
+                throw new CannotFindEntityException("Cannot find the department");
+            return department;
+        }
+    }
+}
+----------------------------------------------------------
+using EmployeeModelLibrary;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EmployeeBLLibrary
+{
+    public interface IManageDepartments
+    {
+        public Department AddDeparment(Department department);
+        public List<Department> GetDepartments();
+    }
+}
+----------------------------------------------------------
+using EmployeeModelLibrary;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EmployeeBLLibrary
+{
+    public interface IManageEmployee
+    {
+        public List<Employee> GetEmployeeByDepartent(int id);
+        public Employee AddEmployee(Employee employee);
+    }
+}
+--------------------------------------------------------------
+using EmployeeDALLibrary;
+using EmployeeModelLibrary;
+
+namespace EmployeeBLLibrary
+{
+    public class EmployeeManagemet : IManageEmployee, IManageDepartments
+    {
+        IRepository<int, Department> _departmentRepository;
+        IRepository<int, Employee> _employeeRepository;
+        public EmployeeManagemet(IRepository<int, Department> departmentRepository,
+        IRepository<int, Employee> employeeRepository)
+        {
+            _departmentRepository = departmentRepository;
+            _employeeRepository = employeeRepository;
+        }
+        public Department AddDeparment(Department department)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Employee AddEmployee(Employee employee)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<Department> GetDepartments()
+        {
+            var departments = _departmentRepository.Get();
+            if(departments == null || departments.Count==0)
+            {
+                throw new EmptyCollectionException();
+            }
+            return departments.ToList();
+        }
+
+        public List<Employee> GetEmployeeByDepartent(int id)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+
+--------------------------------------------------
+using EmployeeBLLibrary;
+using EmployeeDALLibrary;
+using EmployeeModelLibrary;
+using System;
+//using System.Collections;
+
+namespace EmployeeApp
+{
+    internal class Program
+    {
+        
+        static void Main(string[] args)
+        {
+            IRepository<int, Employee> employeerepository = new EmployeeRepository();
+            IRepository<int, Department> departmentRepository = new DepartmentRepository();
+            IManageDepartments manageEmployee = new EmployeeManagemet(departmentRepository,employeerepository);
+             try
+            {
+                var departments = manageEmployee.GetDepartments();
+                foreach (var department in departments)
+                {
+                    Console.WriteLine(department);
+                }
+            }
+            catch (EmptyCollectionException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+    }
+}
+

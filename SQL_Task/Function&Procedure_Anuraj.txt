@@ -1,0 +1,128 @@
+                           --Function and Procedure
+--------------------------------------------------------------------
+--1) Create a function that will take the supplier name and the category name and selects product name and unit price of all the products that are of category provided or of the supplier provided. Print the products sorted by its price
+USE Northwind;
+
+Create Function GetProductsBySupplierAndCategory (@supplier_name nvarchar(60), @category_name nvarchar(30))
+Returns TABLE AS
+Return (
+	Select ProductName, UnitPrice
+	From Products p
+	Inner Join 
+		Suppliers s ON s.SupplierID = p.SupplierID
+	Inner Join
+		Categories c ON c.CategoryID = p.CategoryID
+	Where s.ContactName = @supplier_name
+		OR c.CategoryName = @category_name
+); 
+
+Select *
+From dbo.GetProductsBySupplierAndCategory ('Exotic Liquids', 'Beverages')
+Order By UnitPrice ASC;
+
+--2) Create a function that will take the shipper's name as parameter and return the table that contains the shipper's name (except the one that is given) and the number of orders that are assigned to it
+USE Northwind;
+
+Create Function GetOtherShippersOrders (@ShipperName nvarchar(80))
+Returns Table AS
+Return (
+	Select CompanyName AS ShippperName, COUNT(OrderID) AS NoOfOrders
+	From Shippers s
+	Inner Join
+		Orders o ON o.ShipVia = s.ShipperID
+	Where CompanyName NOT In (@ShipperName)
+	Group By CompanyName
+);
+
+Select *
+From dbo.GetOtherShippersOrders('Speedy Express');
+
+--3) Create a function that will take the unit price and return back the price with tax(i.e price+18%GST)
+USE Northwind;
+
+Create Function PriceAfterGST (@price money)
+Returns money AS
+Begin
+	Declare
+		@PriceAfterTax money
+		Set @PriceAfterTax = @price + (@price) * (18.0 / 100)
+	Return @PriceAfterTax
+End
+
+Select orderid, UnitPrice, Quantity,
+	dbo.PriceAfterGST(UnitPrice) 'PriceAfterTax'
+From [Order Details]
+
+--4) Create a stored procedure that will print all the price and the price with tax and the product name(Note:- the procedure should call the function ;-)
+USE Northwind;
+
+Create Function PriceAfterGST (@price money)
+Returns money AS
+Begin
+	Declare
+		@PriceAfterTax money
+		Set @PriceAfterTax = @price + (@price) * (18.0 / 100)
+	Return @PriceAfterTax
+End
+
+Create Procedure proc_GetProductPrice
+AS
+Begin
+	Select UnitPrice, dbo.PriceAfterGST(UnitPrice) 'PriceAfterTax', ProductName
+	From Products
+End
+
+Exec proc_GetProductPrice
+
+--5) (Use Pubs) Create a cursor that will take every Publisher and print the publisher name, city
+--Books details
+--Name price
+Use pubs;
+	
+Declare @publisher varchar(40), @cityName varchar(20)
+Declare @bookName varchar(80), @bookPrice money
+
+Declare cur_Publisher Cursor For 
+Select pub_name, city
+From Publishers
+
+Open cur_Publisher
+
+Fetch Next From cur_Publisher Into @publisher,@cityName
+
+While @@FETCH_STATUS = 0
+Begin
+	Print '----------Publisher Details----------'
+	Print 'Publisher: ' +  @publisher
+	Print 'City: ' + @cityName
+	Print '----------Book Details----------'
+
+	Declare cur_Book Cursor For
+	Select title, price
+        From titles t
+        Inner Join
+		publishers p ON t.pub_id = p.pub_id
+        Where p.pub_name = @publisher;
+
+	Open cur_Book
+
+	Fetch Next From cur_Book Into @bookName, @bookPrice
+
+	While @@FETCH_STATUS = 0
+	Begin
+		Print 'Book: ' +  @bookName 
+		Print 'Price: ' + CONVERT(VARCHAR, @bookPrice, 1)
+		Print '-----------------------'
+		Fetch Next From cur_Book Into @bookName, @bookPrice
+	End
+
+	Close cur_Book
+	Deallocate cur_Book
+
+	Print ''
+
+	Fetch Next From cur_Publisher Into @publisher,@cityName
+End
+
+Close cur_Publisher
+Deallocate cur_Publisher

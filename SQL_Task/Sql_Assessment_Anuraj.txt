@@ -1,0 +1,273 @@
+use pubs;
+
+--1) Print all the author details sorted by their last name in descending order then by first name in ascending order
+Select * From authors
+Order By au_lname DESC, au_fname;
+
+--2) Print the number of books by every author(id)
+Select au_id, COUNT(title) No_of_Books 
+From titles t
+INNER JOIN
+	titleauthor ta ON t.title_id = ta.title_id
+Group By au_id;
+
+--3) print the number of authors for every book(id)
+Select t.title_id BookID, COUNT(au_id) No_of_Authors 
+From titles t
+Inner Join
+	titleauthor ta ON t.title_id = ta.title_id
+Group By t.title_id; 
+
+--4) print the highest priced book by every publisher id
+Select t.title Book, t.pub_id
+From titles t
+Inner Join
+	publishers p ON t.pub_id = p.pub_id
+Where t.price = (
+	Select MAX(price)
+	From titles t2
+	Where t2.pub_id = t.pub_id
+);
+
+--5) print the first 5 highest quantity sales
+Select top 5 qty HighestQtySales
+From sales
+Order By qty DESC;
+
+--6) print the books that are priced not more than 25 not less than 10
+Select title Book
+From titles t
+Where price > 10 AND price < 25;
+
+--7) Print the books that are price higher than the books that are of type 'trad_cook'
+Select title Book, price
+From titles t
+Where price > All (
+	Select price From titles 
+	Where type = 'trad_cook'
+);
+
+--8) print the books that have 'e' and 'a' in their name
+Select title Book
+From titles 
+Where title LIKE '%e%' AND title LIKE '%e%';
+
+--9) print the number and the sum of their price of books that have been published by authors from 'CA'
+Select a.au_id, COUNT(t.title) AS NumberOfBooks, 
+	   SUM(t.price) AS TotalPrice
+From titles t
+Inner Join 
+	publishers p ON t.pub_id = p.pub_id
+Inner Join 
+	titleauthor ta ON ta.title_id = t.title_id
+Inner Join
+	authors a ON a.au_id = ta.au_id
+Where a.state = 'CA'
+Group By a.au_id;
+
+--10) print the publisher name and the average number of books published
+Select p.pub_name Publisher,
+	AVG(t.ytd_sales) AS AverageBooksPublished
+From publishers p
+Left Join 
+	titles t ON t.pub_id = p.pub_id
+Group By p.pub_name;
+
+--11) Create a procedure that takes the title id and prints the total amount of sale for it
+Create Procedure proc_totalAmnt (@title tid) AS
+Begin
+	Select SUM(t.price * s.qty) TotalAmount
+	From titles t
+	Inner Join
+		sales s ON s.title_id = t.title_id
+	Where t.title_id = @title
+End;
+
+Exec proc_totalAmnt BU1032;
+
+--12) Create a function that takes the author's last name and print his last name and the book name authored
+Create Function fn_bookAuthored(@lastName varchar(40)) 
+Returns table
+Return(
+	Select au_lname, t.title Book
+	From authors a
+	Inner Join
+		titleauthor ta ON ta.au_id = a.au_id
+	Inner Join 
+		titles t ON t.title_id = ta.title_id
+	Where a.au_lname = @lastName
+);
+
+Select * From fn_bookAuthored('DeFrance');
+
+--13) Create a procedure that will take the price and prints the count of book that are priced less than that
+Create Procedure proc_bookCount(@bookPrice money) AS
+Begin
+	Select COUNT(title_id) BookCount
+	From titles
+	Where price < @money
+End
+
+Exec proc_bookCount 20
+
+--14) Find a way to ensure that the price of books is not updated if the price is below 7
+Create Trigger trg_PriceUpdate
+ON titles
+After UPDATE AS
+Begin
+	IF EXISTS (Select 1 From inserted Where price < 7)
+	 Begin
+		Print 'Price of book can not be updated if the price is below 7';
+		Rollback Transaction;
+	 End
+	Else
+	 Begin
+		Print 'Price updated successfully';
+	End
+End;
+
+Update titles
+Set price = 5
+Where title_id = 'PC1035';
+
+--15) Create a set of queries that will take the insert for sale but if the price is greater than 40 then the insert should not happen
+Create Trigger trg_priceNotOver40
+ON sales
+Instead of INSERT AS
+Begin
+	IF EXISTS (Select 1 
+		From inserted i
+		Inner Join
+			titles t ON t.title_id = i.title_id
+		Where (t.price * i.qty) > 40 )
+	 Begin
+		 THROW 50001, 'Total amount crossed 40. Can not insert the data.', 1;
+	 End
+	Else
+	 Begin
+		Insert into sales (stor_id, ord_num, ord_date, qty, payterms, title_id)
+		Select stor_id, ord_num, ord_date, qty, payterms, title_id
+		From inserted;
+	 End
+End;
+
+Insert into sales values ('6380', 'A3424', '2025-05-01', 55, 'Net 30', 'BU1032');
+
+--16) Create a cursor that will take every Publisher and print the publisher's name, cityBooks details Name price
+Declare @publisher varchar(40), @cityName varchar(20)
+Declare @bookName varchar(80), @bookPrice money
+
+Declare cur_Publisher Cursor For 
+Select pub_name, city
+From Publishers
+
+Open cur_Publisher
+
+Fetch Next From cur_Publisher Into @publisher,@cityName
+
+While @@FETCH_STATUS = 0
+Begin
+	Print '----------Publisher Details----------'
+	Print 'Publisher: ' +  @publisher
+	Print 'City: ' + @cityName
+	Print '----------Book Details----------'
+
+	Declare cur_Book Cursor For 
+	Select title, price
+	From titles
+
+	Open cur_Book
+
+	Fetch Next From cur_Book Into @bookName, @bookPrice
+
+	While @@FETCH_STATUS = 0
+	Begin
+		Print 'Book: ' +  @bookName 
+		Print 'Price: ' + CONVERT(VARCHAR, @bookPrice, 1)
+		Print '-----------------------'
+		Fetch Next From cur_Book Into @bookName, @bookPrice
+	End
+
+	Close cur_Book
+	Deallocate cur_Book
+
+	Print ''
+
+	Fetch Next From cur_Publisher Into @publisher,@cityName
+End
+
+Close cur_Publisher
+Deallocate cur_Publisher
+
+-----------------------------------------------------------------------------------
+--Use the Employee, EmployeeSkills and Skills table we used for normalization.
+--Please create the tables and insert records. The file with the Normalized table is attached 
+
+
+--17) Create a trigger for the Employeeskills table for insert that will insert the skill if it is not already present in the skills table (Skill description not required)
+Use mySampleDb;
+
+Create Table Location(
+Area varchar(30) Primary Key,
+[Zip Code] char(6)
+);
+
+Create Table Employee(
+ID int IDENTITY(101, 1) Primary Key,
+Name varchar(30),
+Area varchar(30),
+Foreign Key(Area) References Location(Area)
+);
+
+Create Table Skills(
+Skill varchar(20) Primary Key,
+Skill_description varchar(30),
+);
+
+Create Table Emp_skills(
+ID int,
+Skill varchar(20),
+Skill_level int,
+Foreign Key(ID) References Employee(ID),
+Foreign Key(Skill) References Skills(Skill)
+);
+
+Insert into Location Values
+('ABC', '123456'),
+('EFG', '123455');
+
+Insert into Employee Values
+('Ramu', 'ABC'),
+('Somu', 'EFG'),
+('Bimu', 'ABC');
+
+Insert into Skills Values
+('C', 'PLT'),
+('C++', 'OOPS'),
+('Java', 'Web'),
+('SQL', 'RDBMS');
+
+
+Insert into Emp_skills Values
+(101, 'C', 7),
+(101, 'C++', 6),
+(102, 'C++', 6),
+(102, 'Java', 8),
+(103, 'Java', 7),
+(103, 'SQL', 8);
+
+Create Trigger trg_SkillsInsert
+ON Emp_skills
+Instead of INSERT AS
+Begin
+	Insert into Skills (Skill)
+	Select DISTINCT Skill
+	From inserted
+	Where Skill NOT IN (Select Skill From Skills);
+
+	Insert into Emp_skills (ID, Skill, Skill_level)
+	Select ID, Skill, Skill_level
+	From inserted;
+End;
+
+Insert into Emp_skills Values ('101', 'Python', 8);

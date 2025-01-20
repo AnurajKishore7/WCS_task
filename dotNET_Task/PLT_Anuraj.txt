@@ -1,0 +1,315 @@
+1) Plus Minus
+
+    public static void plusMinus(List<int> arr)
+    {
+        double n = arr.Count;
+        int posNo, negNo, zeroNo;
+        posNo = negNo = zeroNo = 0;
+        
+        foreach(int num in arr){
+            if(num == 0) zeroNo++;
+            else if(num > 0) posNo++;
+            else negNo++;
+        }
+        
+        Console.WriteLine($"{(posNo / n):F6}");
+        Console.WriteLine($"{(negNo / n):F6}");
+        Console.WriteLine($"{(zeroNo / n):F6}");
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2) Staircase
+
+    public static void staircase(int n)
+    {
+        for(int i = 1; i <= n; i++){
+            for(int j = 1; j <= n - i; j++){
+                Console.Write(" ");
+            }
+            for(int j = 1; j <= i; j++){
+                Console.Write("#");
+            }
+            Console.WriteLine();
+        }
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+3) Mini-Max Sum
+
+    public static void miniMaxSum(List<int> arr)
+    {
+        int min = int.MaxValue, max = int.MinValue;
+        long totalSum = 0;
+        
+        foreach(int num in arr){
+            totalSum += num;
+            if(num < min) min = num;
+            if(num > max) max = num;
+        }
+        long miniSum = totalSum - max;
+        long maxSum = totalSum - min;
+        Console.WriteLine(miniSum + " " + maxSum);
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+4) Birthday Cake Candles
+
+    public static int birthdayCakeCandles(List<int> candles)
+    {
+        int n = candles.Count;
+        if(n == 1) return 1;
+        int tallestCandle = candles.Max();
+        int tallestCount = 0;
+        
+        foreach(int candle in candles){
+            if(candle == tallestCandle) tallestCount++;
+        }
+        return tallestCount;
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+5) Time Conversion
+
+public static string timeConversion(string s)
+    {
+        int hour = int.Parse(s.Substring(0,2));
+        string minsSecs = s.Substring(2, 6);
+        string meridiem = s.Substring(8, 2);
+        
+        if(meridiem == "AM" && hour == 12)
+            hour = 0;
+        else if(meridiem == "PM" && hour != 12)
+            hour += 12;
+        return hour.ToString("D2") + minsSecs; 
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+6) Grading Students
+
+    public static List<int> gradingStudents(List<int> grades)
+    {
+        List<int> roundedGrades = new List<int> (grades.Count);
+        
+        foreach(int grade in grades){
+            if(grade >= 38){
+                if(grade % 5 == 0)
+                   roundedGrades.Add(grade);
+                else{
+                    int nextMultipleOf5 = (grade / 5 + 1) * 5;
+                    if(nextMultipleOf5 - grade < 3)
+                        roundedGrades.Add(nextMultipleOf5);
+                    else
+                        roundedGrades.Add(grade);
+                }
+                    
+            }else{
+                roundedGrades.Add(grade);
+            }
+        }
+        
+        return roundedGrades;
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+7) Apple and Orange
+
+    public static void countApplesAndOranges(int s, int t, int a, int b, List<int> apples, List<int> oranges)
+    {
+        int appleCnt = 0, orangeCnt = 0;
+        
+        foreach(int apple in apples){
+            int position = apple + a;
+            if(position >= s && position <= t) appleCnt++;
+        }
+        foreach(int orange in oranges){
+            int position = orange + b;
+            if(position >= s && position <= t) orangeCnt++;
+        }
+        
+        Console.WriteLine(appleCnt);
+        Console.WriteLine(orangeCnt);
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+8) Number line jumps
+ 
+    public static string kangaroo(int x1, int v1, int x2, int v2)
+    {
+        if(x1 == x2 && v1 == v2) return "YES";
+        else if((x1 <= x2 && v1 <= v2) 
+            || (x1 >= x2 && v1 >= v2)) return "NO";
+        
+        int distance = x2 - x1;
+        int velocityDifference = v1 - v2;
+        
+        return (distance % velocityDifference == 0) ? "YES" : "NO";
+    }
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+9) Between Two Sets
+
+    public static int getGCD(int a, int b){
+        while(b != 0){
+            int temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+    
+    public static int getLCM(int a, int b){
+        return (int)((long)(a * b) / getGCD(a, b));
+    }
+
+    public static int getTotalX(List<int> a, List<int> b)
+    {
+        int result = 0;
+        
+        int gcd = b[0];
+        foreach(int num in b){
+            gcd = getGCD(gcd, num);
+        }
+        
+        int lcm = a[0];
+        foreach(int num in a){
+            lcm = getLCM(lcm, num);
+        }
+        
+        if(lcm > gcd) return result;
+        
+        int multiple = 0;
+        while(multiple <= gcd){
+            multiple += lcm;
+            if((gcd % multiple) == 0) result++;
+        }
+        
+        return result;
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+10) Breaking the Records
+
+    public static List<int> breakingRecords(List<int> scores)
+    {
+        int minScore, maxScore;
+        minScore = maxScore = scores[0];
+        int minScoreCnt = 0, maxScoreCnt = 0;
+        
+        foreach(int score in scores){
+            if(score < minScore){
+                minScoreCnt++;
+                minScore = score;
+            }
+            else if(score > maxScore){
+                maxScoreCnt++;
+                maxScore = score;
+            } 
+        }
+        return new List<int> { maxScoreCnt, minScoreCnt };
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+11) Subarray Division
+
+    public static int birthday(List<int> s, int d, int m)
+    {
+        int n = s.Count;
+        int ways = 0;
+        if(n < m) return ways;
+        int sum = 0;
+        
+        for(int i = 0; i < m; i++){
+            sum += s[i];
+        }
+        if(sum == d)
+            ways++;
+        
+        for(int i = m; i < n; i++){
+            sum += s[i];
+            sum -= s[i - m];
+            if(sum == d)
+                ways++;
+        }
+        
+        return ways;
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+12) Divisible Sum Pairs
+
+    public static int divisibleSumPairs(int n, int k, List<int> ar)
+    {
+        int count = 0;
+        
+        for(int i = 0; i < n - 1; i++){
+            int num = ar[i];
+            for(int j = i + 1; j < n; j++){
+                if((num + ar[j]) % k == 0)
+                    count++;
+            }
+        }
+        
+        return count;
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+13) Migratory Birds
+
+    public static int migratoryBirds(List<int> arr)
+    {
+        int n = arr.Count;
+        int[] count = new int[n + 1];
+        
+        for(int i = 0; i < n; i++){
+            count[arr[i]]++;
+        }
+        
+        int bird = 0;
+        int max = -1;
+        for(int i = 0; i < n + 1; i++){
+            if(count[i] > max){
+                max = count[i];
+                bird = i;
+            }
+        }
+        
+        return bird;
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+14) Day of the Programmer
+
+    public static bool isLeap(int year){
+        if(year < 1918)
+            return year % 4 == 0;
+        return (year % 400 == 0) || (year % 4 == 0) && (year % 100 != 0);
+    }
+
+    public static string dayOfProgrammer(int year)
+    {
+        if(year == 1918)
+            return "26.09." + year;
+        if(isLeap(year))
+            return "12.09." + year;
+        else 
+            return "13.09." + year;
+    }
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+15) Bill Division
+
+    public static void bonAppetit(List<int> bill, int k, int b)
+    {
+        int totalBill = 0;
+        for(int i = 0; i< bill.Count; i++){
+            totalBill += bill[i];
+        }
+        
+        int actualBill = (totalBill - bill[k])/2;
+        
+        if(b == actualBill)
+            Console.WriteLine("Bon Appetit");
+        else
+            Console.WriteLine(b - actualBill);
+    }

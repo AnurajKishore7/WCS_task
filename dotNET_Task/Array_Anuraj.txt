@@ -1,0 +1,169 @@
+		Array
+-----------------------------------------
+
+1)  Take a string from user the words separated by comma(","). Separate the words and find out the longest and the shortest word in it.
+
+void LongestShortest(String input)
+{
+    string[] words = input.Split(',');
+    string shortest = words[0];
+    string longest = words[0];
+
+    for (int i = 1; i < words.Length; i++)
+    {
+        {
+            if (words[i].Length < shortest.Length)
+                shortest = words[i].Trim();
+            else if (words[i].Length > longest.Length)
+                longest = words[i].Trim();
+        }
+    }
+
+    Console.WriteLine("Shortest word is " + shortest);
+    Console.WriteLine("Longest word is " + longest);
+}
+-----------------------------------------
+
+2) Take a string from user the words separated by comma (","). Separate the words and find the words with the least number of repeating vowels. print the count and the word. If there is a tie, then print all the words that tie for the least.
+
+void LeastRepeatingVowels(String input)
+{
+    string[] words = input.Split(",");
+
+    for (int i = 0; i < words.Length; i++)
+    {
+        words[i] = words[i].Trim();
+    }
+
+    int minRepeatingVowelsCnt = int.MaxValue;
+    string result = "";
+
+    foreach (string word in words)
+    {
+        int repeatingVowelsCnt = FindRepeatingVowelsCnt(word);
+
+        if(repeatingVowelsCnt < minRepeatingVowelsCnt)
+        {
+            minRepeatingVowelsCnt = repeatingVowelsCnt;
+            result = word;
+        }
+        else if(repeatingVowelsCnt == minRepeatingVowelsCnt)
+        {
+            result += ", " + word;
+        }
+
+    }
+
+    Console.WriteLine("Count: " + minRepeatingVowelsCnt);
+    Console.WriteLine("Words with least repeating vowels: " + result);
+}
+
+int FindRepeatingVowelsCnt(string word)
+{
+    char[] vowels = { 'a', 'e', 'i', 'o', 'u' };
+    int[] vowelsCnt = new int[5];
+
+    foreach(char c in word)
+    {
+        for (int i = 0; i < vowels.Length; i++)
+        {
+            if (c == vowels[i])
+                vowelsCnt[i]++;
+
+        }             
+    }
+
+    int totalRepeatingVowelsCnt = 0;
+
+    for(int i = 0; i < vowelsCnt.Length; i++)
+    {
+        if (vowelsCnt[i] > 1)
+            totalRepeatingVowelsCnt++;
+    }
+
+    return totalRepeatingVowelsCnt;
+}
+-----------------------------------------
+
+3) Take numbers from user until 0 is entered. Print all the prime numbers entered
+
+void FindPrimeNumbers()
+{
+    List<int> primeNumbers = new List<int>();
+    int number;
+    Console.WriteLine("Enter numbers (enter 0 to stop):");
+
+    do
+    {
+        number = Convert.ToInt32(Console.ReadLine());
+        if(number > 1 && isPrime(number))
+            primeNumbers.Add(number);
+    }while (number != 0);
+
+    if (primeNumbers.Count > 0)
+    {
+        Console.WriteLine("Prime numbers entered:");
+        foreach (int prime in primeNumbers)
+        {
+            Console.WriteLine(prime);
+        }
+    }
+    else
+        Console.WriteLine("No prime numbers were entered.");
+}
+
+bool isPrime(int number)
+{
+    if (number < 2) return false;
+    else
+    {
+        for(int i = 2; i * i <= number; i++)
+        {
+            if (number % i == 0) return false;
+        }
+    }
+    return true;
+}
+-----------------------------------------
+
+
+4) Validate a Card number
+4477 4683 4311 3002
+2003 1134 3864 7744- Reverse the number
+2+0*2+0+3*2+1+1*2+3+4*2+3+8*2+6+4*2+7+7*2+4+4*2 - identify the even position numbers and multiply by 2
+2+0+0+6+1+2+3+8+3+16+6+8+7+14+4+8 - Multiplied
+2+0+0+6+1+2+3+8+3+(1+6) +6+8+7+(1+4) +4+8 - If results in 2-digit number sum them up
+2+0+0+6+1+2+3+8+3+7+6+8+7+5+4+8 - Sum up all the values
+70%10-> Divide by 10 if 0 remainder then valid card number
+
+void ValidateCardNumber(string cardNumber)
+{
+    char[] cardDigits = cardNumber.ToCharArray();
+    Array.Reverse(cardDigits);
+
+    int sum = 0;
+    bool evenPosition = false;
+
+    for (int i = 0; i < cardDigits.Length; i++)
+    {
+        int digit = cardDigits[i] - '0';
+
+        if (evenPosition)
+        {
+            digit *= 2; 
+            if (digit > 9) 
+            {
+                digit = digit - 9;
+            }
+        }
+
+        sum += digit;
+        evenPosition = !evenPosition;
+    }
+    bool isValid = (sum % 10 == 0);
+    if (isValid)
+        Console.WriteLine("The card number is valid.")
+    else
+        Console.WriteLine("The card number is invalid.");
+
+}

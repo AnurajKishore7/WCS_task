@@ -1,0 +1,248 @@
+namespace EmployeeModelLibrary
+{
+    public class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int Age { get; set; }
+        public int DepartmentId { get; set; }
+        public float Salary { get; set; }
+
+        public override string ToString()
+        {
+            return "Id : " + Id +
+                "\n Name : " + Name +
+                "\n Age : " + Age +
+                "\n DepartmentId : " + DepartmentId +
+                "\n Salary : " + Salary;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null)
+                return false;
+
+            Employee employee = obj as Employee ?? new Employee();
+            return employee.Id == this.Id;
+        }
+
+        public Employee() { }
+
+        // Constructor chaining
+        public Employee(int id, string name, int age, int departmentId, float salary) : this(name, age, departmentId, salary)
+        {
+            Id = id;
+        }
+
+        public Employee(string name, int age, int departmentId, float salary)
+        {
+            Name = name;
+            Age = age;
+            DepartmentId = departmentId;
+            Salary = salary;
+        }
+    }
+}
+-----------------------------------------------------------------------------------------------------------------------------------
+
+using EmployeeModelLibrary;
+
+namespace EmployeeDALLibrary
+{
+    public interface IRepository
+    {
+        Employee Add(Employee employee);
+        List<Employee> GetEmployees();
+        Employee GetEmployee(int id);
+        Employee UpdateEmployee(int id, Employee employee);
+        bool DeleteEmployee(int id);
+    }
+}
+-----------------------------------------------------------------------------------------------------------------------------------
+
+using EmployeeModelLibrary;
+
+namespace EmployeeDALLibrary
+{
+    public abstract class EmployeeRepository : IRepository
+    {
+        protected List<Employee> employees = new List<Employee>();
+        static int counter = 0;
+
+        public abstract Employee UpdateEmployee(int id, Employee employee);
+
+        private int GetMaxId()
+        {
+            int max = 0;
+            foreach (Employee employee in employees)
+            {
+                if (employee.Id > max)
+                {
+                    max = employee.Id;
+                }
+            }
+            return max;
+        }
+
+        private int GenerateId()
+        {
+            if (counter == 0)
+            {
+                return 101;
+            }
+            return GetMaxId() + 1;
+        }
+
+        public Employee Add(Employee employee)
+        {
+            if (employee == null)
+            {
+                return null;
+            }
+
+            employee.Id = GenerateId();
+            employees.Add(employee);
+            counter++;
+            return employee;
+        }
+
+        public bool DeleteEmployee(int id)
+        {
+            Employee employee = GetEmployee(id);
+            if (employee == null)
+            {
+                return false;
+            }
+
+            employees.Remove(employee);
+            counter--;
+            return true;
+        }
+
+        public Employee GetEmployee(int id)
+        {
+            foreach (Employee employee in employees)
+            {
+                if (employee.Id == id)
+                {
+                    return employee;
+                }
+            }
+            return null;
+        }
+
+        public List<Employee> GetEmployees()
+        {
+            return employees;
+        }
+    }
+}
+-----------------------------------------------------------------------------------------------------------------------------------
+
+using EmployeeModelLibrary;
+
+namespace EmployeeDALLibrary
+{
+    public class EmployeeConcreteRepository : EmployeeRepository
+    {
+        public override Employee UpdateEmployee(int id, Employee employee)
+        {
+            Employee emp = GetEmployee(id);
+            if (emp == null)
+            {
+                return null;
+            }
+
+            int index = -1;
+            for (int i = 0; i < employees.Count; i++)
+            {
+                if (employees[i].Id == id)
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index != -1)
+            {
+                employees[index] = employee;
+                return employees[index];
+            }
+
+            return null;
+        }
+    }
+}
+-----------------------------------------------------------------------------------------------------------------------------------
+
+using EmployeeDALLibrary;
+using EmployeeModelLibrary;
+
+namespace EmployeeApp
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            EmployeeConcreteRepository repo = new EmployeeConcreteRepository();
+
+            // Adding new employees
+            Employee emp1 = new Employee("Alice", 30, 101, 50000f);
+            Employee emp2 = new Employee("Bob", 25, 102, 45000f);
+            repo.Add(emp1);
+            repo.Add(emp2);
+
+            // Displaying all employees
+            Console.WriteLine("Employees List:");
+            List<Employee> employees = repo.GetEmployees();
+            DisplayEmployees(employees);
+
+            // Displaying employee by ID
+            Console.WriteLine("\nGet employee by ID 101:");
+            Employee emp = repo.GetEmployee(101);
+            DisplayEmployee(emp);
+
+            // Update employee with ID 101
+            Console.WriteLine("\nUpdate employee with ID 101:");
+            Employee updatedEmp = new Employee(101, "Alice Smith", 30, 101, 55000f);
+            repo.UpdateEmployee(101, updatedEmp);
+            DisplayEmployee(repo.GetEmployee(101));
+
+            // Delete employee with ID 102
+            Console.WriteLine("\nDelete employee with ID 102:");
+            bool deleteResult = repo.DeleteEmployee(102);
+            Console.WriteLine(deleteResult ? "Employee deleted successfully." : "Employee not found.");
+
+            // Display remaining employees
+            Console.WriteLine("\nRemaining Employees List:");
+            employees = repo.GetEmployees();
+            DisplayEmployees(employees);
+        }
+
+        static void DisplayEmployees(List<Employee> employees)
+        {
+            foreach (Employee employee in employees)
+            {
+                if (employee != null)
+                {
+                    Console.WriteLine(employee.ToString());
+                }
+            }
+        }
+
+        static void DisplayEmployee(Employee employee)
+        {
+            if (employee != null)
+            {
+                Console.WriteLine(employee.ToString());
+            }
+            else
+            {
+                Console.WriteLine("Employee not found.");
+            }
+        }
+    }
+}
+
+
+

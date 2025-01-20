@@ -1,0 +1,109 @@
+Use pubs
+------------------------------------------------------------------------------
+--1) Print the storeid and number of orders for the store
+Select st.stor_id StoreID, COUNT(sa.stor_id) AS NumberOfOrders
+From Stores st 
+Left Outer Join Sales sa
+On st.stor_id = sa.stor_id
+Group By st.stor_id
+
+--2) print the number of orders for every title
+Select t.title_id AS Titles, COUNT(s.title_id) AS NumberOfOrders
+From Titles t 
+Left Outer Join Sales s
+On t.title_id = s.title_id
+Group By t.title_id
+
+--3) print the publisher name and book name
+Select pub_name AS Publisher, title AS Book
+From publishers p 
+Inner Join titles t
+On p.pub_id = t.pub_id
+
+--4) Print the author full name for al the authors
+Select au_fname + ' ' + au_lname AS AuthorName
+From authors
+
+--5) Print the price for every book with tax (price + price*12.36/100)
+Select title AS Book, (price + price*12.36/100) AS Price
+From titles
+
+--6) Print the author name, title name
+Select au_fname + ' ' + au_lname AS AuthorName, title AS Book
+From Authors a 
+Inner Join titleauthor ta
+On a.au_id = ta.au_id
+Inner Join titles t
+On t.title_id = ta.title_id
+
+--7) print the author name, title name and the publisher name
+Select au_fname AS AuthorName, title AS Book, pub_name AS Publisher
+From Authors a 
+Inner Join titleauthor ta
+On a.au_id = ta.au_id
+Inner Join titles t
+On t.title_id = ta.title_id
+Inner Join publishers p
+On p.pub_id = t.pub_id
+
+--8) Print the average price of books published by every publisher
+Select pub_name AS Publisher, AVG(price) AS AvgPriceOfBooks
+From publishers p 
+Inner Join titles t
+On p.pub_id = t.pub_id
+Group by pub_name
+
+--9) print the books published by 'Marjorie'
+Select title AS Books From titles
+Where pub_id IN 
+(Select pub_id From publishers
+Where pub_name = 'Marjorie')
+
+--10) Print the ordered numbers of books published by 'New Moon Books'
+Select COUNT(s.title_id) AS OrderedBooksCount
+From publishers p 
+Inner Join titles t
+On p.pub_id = t.pub_id
+Inner Join Sales s
+On t.title_id = s.title_id
+Where pub_name = 'New Moon Books'
+
+--11) Print the number of orders for every publisher
+Select pub_name AS Publisher, COUNT(s.title_id) AS OrderedBooksCount
+From publishers p 
+Inner Join titles t
+On p.pub_id = t.pub_id
+Inner Join Sales s
+On t.title_id = s.title_id
+Group By pub_name 
+
+--12) print the order number , book name, quantity, price and the total price for all orders
+Select ord_num, title AS Book, qty, price, qty * price AS TotalPrice
+From Sales s
+Inner Join titles t
+On t.title_id = s.title_id
+
+--13) print he total order quantity for every book
+Select title AS Book, SUM(qty) AS TotalOrders
+From titles t
+Left Outer Join sales s
+On s.title_id = t.title_id
+Group by title
+
+--14) print the total order value for every book
+Select title AS Book, SUM(qty * price) AS TotalOrderValue
+From titles t
+Left Outer Join sales s
+On s.title_id = t.title_id
+Group by title
+
+--15) print the orders that are for the books published by the publisher for which 'Paolo' works for
+Select ord_num AS Orders
+From sales s
+Inner Join titles t
+On t.title_id = s.title_id
+Inner Join publishers p
+On t.pub_id = p.pub_id
+Inner Join employee e
+On p.pub_id = e.pub_id
+Where fname = 'Paolo'

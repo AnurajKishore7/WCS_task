@@ -1,0 +1,30 @@
+Post Lunch Activities:
+ER Chart corrections
+You need to prepare 25 DQL statements scenario for each tables Book , Author and Publisher.
+DQL Statements should use, IN, NOT, LIKE, LIKE (%, _ , []) where, ORDER, alias names, between, etc
+Create table Book(
+book_id int identity(1000,1) Primary Key,
+title varchar(50) Unique,
+price int default 299,
+no_of_pages int Check(no_of_pages > 100),
+author_id int,
+publisher_id int,
+publish_date date
+)
+Create table Author(
+author_id int identity(2000,1) Primary Key,
+author_name varchar(150),
+pseudo_name varchar(150) Unique,
+dob date,
+nationality varchar(50) Default 'India',
+email varchar(150) check(email like '%@%'),
+phone char(10) check(len(phone) = 10)
+)
+publisher_id int identity(3000,1) Primary Key,
+publisher_name varchar(150),
+address varchar(1000),
+city varchar(100),
+state varchar(100) Default 'Tamil Nadu',
+contact_number char(10) check(len(contact_number) = 10),
+email varchar(150) check(email like '%@%') Unique
+)

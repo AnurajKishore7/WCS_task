@@ -1,0 +1,324 @@
+    public class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string? Department { get; set; }
+        public string Designation { get; set; }
+        public double Salary { get; set; }
+
+        public Employee()
+        {
+            Name = string.Empty;
+            Department = string.Empty;
+        }
+
+        public Employee(int id, string name, string? department, string designation, double salary)
+        {
+            Id = id;
+            Name = name;
+            Department = department;
+            Designation = designation;
+            Salary = salary;
+        }
+
+        public Employee(string name, string? department, string designation, double salary)
+        {
+            Name = name;
+            Department = department;
+            Designation = designation;
+            Salary = salary;
+        }
+
+        public override string ToString()
+        {
+            return " Employee Id: " + Id
+                + "\n Employee Name: " + Name
+                + "\n Department: " + Department
+                + "\n Designation: " + Designation
+                + "\n Salary: " + Salary
+                + "\n---------------------------------";
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null) return false;
+            if (obj is Employee otherEmployee)
+            {
+                return this.Id == otherEmployee.Id;
+            }
+            return false;
+        }
+
+        public static bool operator ==(Employee emp1, Employee emp2)
+        {
+            if (emp1 is null && emp2 is null)
+                return true;
+            if (emp1 is null || emp2 is null)
+                return false;
+
+            return emp1.Id == emp2.Id;
+        }
+
+        public static bool operator !=(Employee emp1, Employee emp2)
+        {
+            return !(emp1 == emp2);
+        }
+
+    }
+-------------------------------------------------------------------------------------------------------------------------
+
+    public class ManageEmployees
+    {
+        private List<Employee> employees = new List<Employee>();
+        public static int EmployeeCount = 0;
+
+        private int GenerateEmployeeId()
+        {
+            return (++EmployeeCount + 100);
+        }
+
+        public Employee? AddEmployee(Employee employee)
+        {
+            if (employee == null)
+            {
+                Console.WriteLine("Cannot add a null employee.");
+                return null;
+            }
+
+            if (EmployeeCount >= 10)
+            {
+                Console.WriteLine("Employee limit reached. Cannot add more employees.");
+                return null;
+            }
+
+            employee.Id = GenerateEmployeeId();
+            employees.Add(employee);
+            return employee;
+        }
+
+        public List<Employee>? GetEmployees()
+        {
+            if (EmployeeCount == 0)
+            {
+                Console.WriteLine("No employees found.");
+                return null;
+            }
+
+            return new List<Employee>(employees);
+        }
+
+        public Employee? GetEmployee(int id)
+        {
+            foreach (var employee in employees)
+            {
+                if (employee.Id == id)
+                {
+                    return employee;
+                }
+            }
+            return null;
+        }
+
+        public Employee? UpdateEmployee(Employee employee)
+        {
+            for (int i = 0; i < employees.Count; i++)
+            {
+                if (employees[i].Id == employee.Id)
+                {
+                    employees[i] = employee;
+                    return employees[i];
+                }
+            }
+            return null;
+        }
+
+        public bool RemoveEmployee(int id)
+        {
+            for (int i = 0; i < employees.Count; i++)
+            {
+                if (employees[i].Id == id)
+                {
+                    employees.RemoveAt(i);
+                    EmployeeCount--;
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+-------------------------------------------------------------------------------------------------------------------------
+
+    public class Program
+    {
+        static void Main(string[] args)
+        {
+            ManageEmployees manageEmployees = new ManageEmployees();
+
+            bool exit = false;
+
+            while (!exit)
+            {
+                Console.WriteLine("\n--- Employee Management System ---");
+                Console.WriteLine("1. Add Employee");
+                Console.WriteLine("2. Get Employee Details");
+                Console.WriteLine("3. Get All Employees");
+                Console.WriteLine("4. Update Employee");
+                Console.WriteLine("5. Remove Employee");
+                Console.WriteLine("6. Exit");
+                Console.Write("Choose an option: ");
+
+                int choice = Convert.ToInt32(Console.ReadLine());
+
+                switch (choice)
+                {
+                    case 1:
+                        AddEmployee1(manageEmployees);
+                        break;
+
+                    case 2:
+                        GetEmployeeDetails(manageEmployees);
+                        break;
+
+                    case 3:
+                        GetAllEmployees(manageEmployees);
+                        break;
+
+                    case 4:
+                        UpdateEmployee(manageEmployees);
+                        break;
+
+                    case 5:
+                        RemoveEmployee(manageEmployees);
+                        break;
+
+                    case 6:
+                        exit = true;
+                        Console.WriteLine("Exiting... Thank you!");
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid option. Please try again.");
+                        break;
+                }
+            }
+        }
+
+        private static void AddEmployee1(ManageEmployees manageEmployees)
+        {
+            Console.WriteLine("\n--- Add Employee ---");
+
+            Console.Write("Enter Name: ");
+            string name = Console.ReadLine();
+
+            Console.Write("Enter Department: ");
+            string department = Console.ReadLine();
+
+            Console.Write("Enter Designation: ");
+            string designation = Console.ReadLine();
+
+            Console.Write("Enter Salary: ");
+            double salary = Convert.ToDouble(Console.ReadLine());
+
+            Employee employee = new Employee(name, department, designation, salary);
+            Employee? addedEmployee = manageEmployees.AddEmployee(employee);
+
+            if (addedEmployee != null)
+            {
+                Console.WriteLine("\nEmployee added successfully:");
+                Console.WriteLine(addedEmployee);
+            }
+        }
+
+        private static void GetEmployeeDetails(ManageEmployees manageEmployees)
+        {
+            Console.WriteLine("\n--- Get Employee Details ---");
+
+            Console.Write("Enter Employee ID: ");
+            int id = Convert.ToInt32(Console.ReadLine());
+
+            Employee? employee = manageEmployees.GetEmployee(id);
+
+            if (employee != null)
+            {
+                Console.WriteLine("\nEmployee Details:");
+                Console.WriteLine(employee);
+            }
+            else
+            {
+                Console.WriteLine("Employee not found.");
+            }
+        }
+
+        private static void GetAllEmployees(ManageEmployees manageEmployees)
+        {
+            Console.WriteLine("\n--- Get All Employees ---");
+
+            List<Employee>? employees = manageEmployees.GetEmployees();
+
+            if (employees != null)
+            {
+                Console.WriteLine("All Employees:");
+                foreach (var emp in employees)
+                {
+                    if (emp != null)
+                        Console.WriteLine(emp);
+                }
+            }
+            else
+            {
+                Console.WriteLine("No employees found.");
+            }
+        }
+
+        private static void UpdateEmployee(ManageEmployees manageEmployees)
+        {
+            Console.WriteLine("\n--- Update Employee ---");
+
+            Console.Write("Enter Employee ID to update: ");
+            int id = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Enter Updated Name: ");
+            string name = Console.ReadLine();
+
+            Console.Write("Enter Updated Department: ");
+            string department = Console.ReadLine();
+
+            Console.Write("Enter Updated Designation: ");
+            string designation = Console.ReadLine();
+
+            Console.Write("Enter Updated Salary: ");
+            double salary = Convert.ToDouble(Console.ReadLine());
+
+            Employee updatedEmployee = new Employee(id, name, department, designation, salary);
+            Employee? updated = manageEmployees.UpdateEmployee(updatedEmployee);
+
+            if (updated != null)
+            {
+                Console.WriteLine("\nEmployee updated successfully:");
+                Console.WriteLine(updated);
+            }
+            else
+            {
+                Console.WriteLine("Employee update failed. Employee not found.");
+            }
+        }
+
+        private static void RemoveEmployee(ManageEmployees manageEmployees)
+        {
+            Console.WriteLine("\n--- Remove Employee ---");
+
+            Console.Write("Enter Employee ID to remove: ");
+            int id = Convert.ToInt32(Console.ReadLine());
+
+            bool isRemoved = manageEmployees.RemoveEmployee(id);
+
+            if (isRemoved)
+            {
+                Console.WriteLine("Employee removed successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Failed to remove employee. Employee not found.");
+            }
+        }
+}

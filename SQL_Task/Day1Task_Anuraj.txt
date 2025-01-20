@@ -1,0 +1,203 @@
+1.BinaryGap
+
+   class Solution {
+    public int solution(int N) {
+        int maxGap = 0;
+        int curGap = 0;
+        boolean inGap = false;
+
+        while(N > 0){
+            if(N % 2 == 1){
+                inGap = true;
+                if(curGap > maxGap)
+                    maxGap = curGap;
+                curGap = 0;
+            }else if(inGap && N % 2 == 0)
+                curGap++;
+            N /= 2;
+        }
+
+        return maxGap;
+    }
+   }
+
+2.CyclicRotation
+
+  class Solution {
+    public int[] solution(int[] A, int K) {
+        // Implement your solution here
+        int n = A.length;
+        if(n <= 1) return A;
+        K = K % n;
+
+        reverse(A, n - K, n - 1);
+        reverse(A, 0, n - K - 1);
+        reverse(A, 0, n - 1);
+
+        return A;
+    }
+
+    public void reverse(int[] A, int st, int end){
+        while(st < end){
+            int temp = A[st];
+            A[st] = A[end];
+            A[end] = temp;
+            st++;
+            end--;
+        }
+    }
+  }
+
+3.OddOccurrencesInArray
+
+   class Solution {
+    public int solution(int[] A) {
+        int xor1 = 0;
+
+        for(int a : A){
+            xor1 ^= a;
+        }
+
+        return xor1;
+    }
+   }
+
+4.FrogJmp
+
+   class Solution {
+    public int solution(int X, int Y, int D) {
+        int jumps = (Y - X) / D;
+
+        if(((Y - X) % D) != 0) jumps++;
+
+        return jumps;
+    }
+   }
+
+5.PermMissingElem
+
+   class Solution {
+    public int solution(int[] A) {
+        int n = A.length;
+        if(n < 1) return 1;
+        int ans = 0;
+        
+        for(int i = 0; i < n; i++){
+            ans ^= i + 1;
+            ans ^= A[i];
+        }
+        ans ^= n + 1;
+
+        return ans;
+    }
+   }
+
+6.TapeEquilibrium
+
+   class Solution {
+    public int solution(int[] A) {
+        int n = A.length;
+        int lSum = A[0];
+        int rSum = 0;
+        int minSum = Integer.MAX_VALUE;
+
+        for(int i = 1; i < n; i++){
+            rSum += A[i];
+        }
+
+        for(int i = 1; i < n; i++){
+            int diff = Math.abs(lSum - rSum);
+            if(diff < minSum) minSum = diff;
+            lSum += A[i];
+            rSum -= A[i];
+        }
+
+        return minSum;
+    }
+   }
+
+7.FrogRiverOne
+
+   class Solution {
+    public int solution(int X, int[] A) {
+        boolean positions[] = new boolean[X];
+        int n = A.length;
+        int position = 0;
+
+        for(int i = 0; i < n; i++){
+            if(!positions[A[i] - 1]){
+                positions[A[i] - 1] = true;
+                position++;
+            }
+            if(position == X) return i;
+        }
+
+        return -1;
+    }
+   }
+
+8.PermCheck
+
+   class Solution {
+    public int solution(int[] A) {
+        int n = A.length;
+        boolean count[] = new boolean[n];
+
+        for(int i = 0; i < n; i++){
+            if(A[i] > n) return 0;
+            else if(count[A[i] - 1]) return 0;
+            count[A[i] - 1] = true;
+        }
+        return 1;
+    }
+   }
+
+9.MaxCounters
+
+   class Solution {
+    public int[] solution(int N, int[] A) {
+        int m = A.length;
+        int[] B = new int[N];
+        int maxCnt = 0;
+        int lastMax = 0;
+
+        for(int i = 0; i < m; i++){
+            if(A[i] == N + 1)
+                lastMax = maxCnt;
+            else{
+                int idx = A[i] - 1;
+                if(B[idx] < lastMax)
+                    B[idx] = lastMax;
+                B[idx]++;
+                if(B[idx] > maxCnt)
+                    maxCnt = B[idx];
+            }
+        }
+
+        for(int i = 0; i < N; i++){
+            if(B[i] < lastMax)
+                B[i] = lastMax;
+        }
+
+        return B;
+    }
+   }
+
+10.MissingInteger
+
+import java.util.HashSet;
+class Solution {
+    public int solution(int[] A) {
+        HashSet<Integer> nums = new HashSet<>();
+
+        for (int i = 1; i <= A.length + 1; i++) {
+            nums.add(i);
+        }
+
+        for (int a : A) {
+            nums.remove(a);
+        }
+
+        return nums.iterator().next();
+    }
+}

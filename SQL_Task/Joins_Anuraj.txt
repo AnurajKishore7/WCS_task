@@ -1,0 +1,113 @@
+--1) Fetch all the titles and the details of titles that have been sold
+Select * From titles
+Where title_id in 
+(Select title_id From sales)
+
+--2) Print the book name, publisher name and the sale quantity of all thetitles and fetch all teh publishe
+Select 
+    t.title AS BookName, 
+    p.pub_name AS PublisherName, 
+    COALESCE(Sum(s.qty), 0) AS SaleQuantity
+From titles t 
+Left Outer Join publishers p
+    On p.pub_id = t.pub_id
+Left Outer Join sales s 
+    On t.title_id = s.title_id
+Group By t.title, p.pub_name
+
+
+--3) print the details of the sale when the sale quantity is greater than the sale quantity of all the same titles sold in the same store
+Select *
+From sales s
+Where s.qty > All (
+    Select Sum(s1.qty)
+    From sales s1
+    Where s1.title_id = s.title_id
+    And s1.stor_id = s.stor_id
+    Group By s1.title_id, s1.stor_id
+)
+
+--4) Print the average price of every author's books with the author's full name
+Select au_fname + ' ' + au_lname AS AuthorName, AVG(price) AS Avg_Price
+From authors a 
+Inner Join titleauthor ta
+On a.au_id = ta.au_id
+Inner Join titles t
+On t.title_id = ta.title_id
+Group By au_fname, au_lname
+
+--5) Print the schema of the titles table and locate all the constrants
+EXEC sp_help 'titles'
+
+--6) Print the sale details of the books that are authored by authors who come from city which has more authors than the count of authors coming from 'CA'
+Select *
+From sales
+Where title_id In (
+    Select ta.title_id 
+    From titleauthor ta
+    Where ta.au_id In (
+        Select a.au_id
+        From authors a
+        Where a.state In (
+            Select state
+            From authors
+            Group By state
+            Having COUNT(state) > (
+                Select COUNT(state)
+                From authors
+                Where state = 'CA'
+            )
+        )
+    )
+)
+
+--7) Print the Store details if any sale is made for the book sold in quantity 3
+Select * 
+From stores
+Where stor_id In (
+	Select stor_id
+	From sales s
+	Group By title_id, stor_id
+	Having SUM(qty) = 3
+)
+
+--8) Print the details of the books that have been authored by more than 1 author.
+Select * 
+From titles
+Where title_id In (
+    Select title_id
+    From titleauthor
+    Group by title_id
+    Having COUNT(au_id) > 1
+)
+
+--9) Print the number of books that been authored by more than one author and published by publisher who have more than 2 employees
+Select COUNT(title_id) AS NumberOfBooks
+From titles
+Where title_id In (
+    Select title_id
+    From titleauthor
+    Group by title_id
+    Having COUNT(au_id) > 1
+   ) 
+And pub_id In (
+	Select pub_id
+	From employee
+	Group By pub_id
+	Having COUNT(emp_id) > 2
+)
+
+--10) Print the store name, title name,, quantity, sale amount, pulisher name, author name for all the sales. Also print those books which have not been sold and authors who have not written.
+Select 
+    st.stor_name,
+    t.title AS BookName,
+    COALESCE(s.qty, 0) AS Quantity,
+    COALESCE(s.qty * t.price, 0) AS SaleAmount,
+    p.pub_name AS PublisherName,
+    a.au_fname AS AuthorName
+From titles t
+Left Join sales s ON t.title_id = s.title_id
+Left Join stores st ON s.stor_id = st.stor_id
+Left Join publishers p ON t.pub_id = p.pub_id
+Left Join titleauthor ta ON t.title_id = ta.title_id
+Left Join authors a ON ta.au_id = a.au_id

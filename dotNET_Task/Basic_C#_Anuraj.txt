@@ -1,0 +1,154 @@
+1) 
+namespace Problem1
+{
+    internal class Program
+    {
+        int num1, num2;
+
+        void GetNumbers(){
+            Console.WriteLine("Enter num1: ");
+            num1 = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Enter num2: ");
+            num2 = Convert.ToInt32(Console.ReadLine());
+        }
+
+        void add(int num1, int num2){
+            Console.WriteLine("Sum of numbers is " + (num1 + num2));
+        }
+
+        void sub(int num1, int num2){
+            Console.WriteLine("Difference of numbers is " + (num1 - num2));
+        }
+        void product(int num1, int num2){
+            Console.WriteLine("Product of numbers is " + (num1 * num2));
+        }
+
+        void quotient(int num1, int num2){
+            Console.WriteLine("Quotient of numbers is " + (num1 / num2));
+        }
+
+        void remainder(int num1, int num2){
+            Console.WriteLine("Remainder of numbers is " + (num1 % num2));
+        }
+        static void Main(string[] args)
+        {
+            Program prgm = new();
+
+            prgm.GetNumbers();
+            prgm.add(prgm.num1, prgm.num2);
+            prgm.sub(prgm.num1, prgm.num2);
+            prgm.product(prgm.num1, prgm.num2);
+            prgm.quotient(prgm.num1, prgm.num2);
+            prgm.remainder(prgm.num1, prgm.num2);    
+        }
+    }
+}
+-----------------------------------------------------------------------------------------
+
+2) 
+void GreatestOfAllNumbers()
+{
+	    int num;
+            int? greatest = null;
+            Console.WriteLine("Enter numbers (negative number to stop)");
+            while (true)
+            {
+                Console.Write("Enter a number: ");
+                num = int.Parse(Console.ReadLine());
+
+                if (num < 0) break;
+
+                if (greatest == null || num > greatest)
+                {
+                    greatest = num;
+                }
+            }
+
+            if (greatest == null)
+                Console.WriteLine("No valid numbers are present.");
+            else
+                Console.WriteLine("Greatest of all numbers is " + greatest);
+  }
+-----------------------------------------------------------------------------------------
+
+3) 
+int AvgDivisibleBy7()
+{
+    int num;
+    int n = 0;
+    int sum = 0;
+    Console.WriteLine("Enter numbers (negative number to stop)");
+
+    while (true)
+    {
+        Console.Write("Enter a number: ");
+        num = int.Parse(Console.ReadLine());
+
+        if (num < 0) break;
+
+        if ((num % 7) == 0)
+        {
+            sum += num;
+            n++;
+        }
+    }
+
+    if (n == 0) return 0;
+
+    return (sum / n);
+}
+-----------------------------------------------------------------------------------------
+
+4) 
+int LengthOfName(string name)
+{
+    int length = 0;
+    foreach (char c in name)
+    {
+        length++;
+    }
+    return length;
+}
+//we can also use "Length" property to find the length by name.Length
+-----------------------------------------------------------------------------------------
+
+5) 
+void LoginPage()
+{
+    string correctUserName = "ABC";
+    string correctPassword = "123";
+    int maxAttempt = 3;
+    int attempt = 0;
+    bool isAuthenticated = false;
+
+    do
+    {
+        Console.Write("Enter your username: ");
+        string userName = Console.ReadLine();
+        Console.Write("Enter your password: ");
+        string password = Console.ReadLine();
+
+        if (userName == correctUserName && password == correctPassword)
+        {
+            Console.WriteLine("Login Successful...");
+            isAuthenticated = true;
+            break;
+        }
+        else
+        {
+            attempt++;
+            if (userName != correctUserName)
+                Console.WriteLine("Invalid username!!!");
+            else
+                Console.WriteLine("Incorrect password!!!");
+
+            if (attempt < 3)
+                Console.WriteLine("You have " + (maxAttempt - attempt) + " attempts to login");
+        }
+    } while (attempt < 3);
+
+    if (isAuthenticated)
+        Console.WriteLine("Welcome to the application");
+    else
+        Console.WriteLine("You have exceeded the number of attempts to login.");
+}
