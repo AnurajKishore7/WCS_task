@@ -1,0 +1,474 @@
+using HospitalModelLibrary;
+
+namespace HospitalBLLLibrary
+{
+    public interface IPatientService
+    {
+        Patient? AddPatient(Patient patient);
+        IEnumerable<Patient> GetAllPatients();
+        Patient? GetPatient(int id);
+        bool DeletePatient(int id);
+    }
+}
+
+================================================================
+
+using HospitalDALLibrary;
+using HospitalModelLibrary;
+
+namespace HospitalBLLLibrary
+{
+    public class PatientService : IPatientService
+    {
+        private readonly IRepository<int, Patient> _patientRepository;
+
+        public PatientService(IRepository<int, Patient> patientRepository)
+        {
+            _patientRepository = patientRepository;
+        }
+
+        private bool ValidatePatient(Patient patient, out string errorMessage)
+        {
+            if (string.IsNullOrWhiteSpace(patient.Name))
+            {
+                errorMessage = "Patient name cannot be empty.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(patient.Gender))
+            {
+                errorMessage = "Patient gender cannot be empty.";
+                return false;
+            }
+
+            if (patient.Age <= 0)
+            {
+                errorMessage = "Patient age must be greater than zero.";
+                return false;
+            }
+
+            errorMessage = string.Empty;
+            return true;
+        }
+
+        public Patient? AddPatient(Patient patient)
+        {
+            if (!ValidatePatient(patient, out string errorMessage))
+            {
+                Console.WriteLine(errorMessage);
+                return null;
+            }
+
+            try
+            {
+                return _patientRepository.Add(patient);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while adding patient: {ex.Message}");
+                return null;
+            }
+        }
+
+        public IEnumerable<Patient> GetAllPatients()
+        {
+            try
+            {
+                return _patientRepository.GetAll();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrieving patients: {ex.Message}");
+                return Enumerable.Empty<Patient>();
+            }
+        }
+
+        public Patient? GetPatient(int id)
+        {
+            if (id <= 0)
+            {
+                Console.WriteLine("Invalid patient ID.");
+                return null;
+            }
+
+            try
+            {
+                return _patientRepository.Get(id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrieving patient with ID {id}: {ex.Message}");
+                return null;
+            }
+        }
+
+        public bool DeletePatient(int id)
+        {
+            if (id <= 0)
+            {
+                Console.WriteLine("Invalid patient ID.");
+                return false;
+            }
+
+            try
+            {
+                _patientRepository.Delete(id);
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while deleting patient with ID {id}: {ex.Message}");
+                return false;
+            }
+        }
+    }
+}
+
+=================================================================================
+
+using HospitalModelLibrary;
+
+namespace HospitalBLLLibrary
+{
+    public interface IDoctorService
+    {
+        Doctor? AddDoctor(Doctor doctor);
+        IEnumerable<Doctor> GetAllDoctors();
+
+        IEnumerable<Doctor> GetDoctorsBySpecialization(string specialization);
+        Doctor? GetDoctor(int id);
+        Doctor? UpdateDoctor(int id, Doctor doctor);
+        bool DeleteDoctor(int id);
+    }
+}
+
+====================================================================================
+
+using HospitalModelLibrary;
+using HospitalDALLibrary;
+
+namespace HospitalBLLLibrary
+{
+    public class DoctorService : IDoctorService
+    {
+        private readonly IDoctorRepository _doctorRepository;
+
+        public DoctorService(IDoctorRepository doctorRepository)
+        {
+            _doctorRepository = doctorRepository;
+        }
+
+        private bool ValidateDoctor(Doctor doctor, out string errorMessage)
+        {
+            if (string.IsNullOrWhiteSpace(doctor.Name))
+            {
+                errorMessage = "Doctor name cannot be empty.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(doctor.Gender))
+            {
+                errorMessage = "Doctor gender cannot be empty.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(doctor.Specialization))
+            {
+                errorMessage = "Doctor specialization cannot be empty.";
+                return false;
+            }
+
+            if (doctor.Age <= 0)
+            {
+                errorMessage = "Doctor age must be greater than zero.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(doctor.Mobile) || doctor.Mobile.Length != 10)
+            {
+                errorMessage = "Doctor mobile number must be exactly 10 digits.";
+                return false;
+            }
+
+            errorMessage = string.Empty;
+            return true;
+        }
+
+        public Doctor? AddDoctor(Doctor doctor)
+        {
+            if (!ValidateDoctor(doctor, out string errorMessage))
+            {
+                Console.WriteLine($"Validation failed: {errorMessage}");
+                return null;
+            }
+
+            try
+            {
+                return _doctorRepository.Add(doctor);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while adding doctor: {ex.Message}");
+                return null;
+            }
+        }
+
+        public IEnumerable<Doctor> GetAllDoctors()
+        {
+            try
+            {
+                return _doctorRepository.GetAll();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrieving doctors: {ex.Message}");
+                return Enumerable.Empty<Doctor>();
+            }
+        }
+
+        public IEnumerable<Doctor> GetDoctorsBySpecialization(string specialization)
+        {
+            if (string.IsNullOrWhiteSpace(specialization))
+            {
+                Console.WriteLine("Specialization cannot be empty.");
+                return Enumerable.Empty<Doctor>();
+            }
+
+            try
+            {
+                return _doctorRepository.GetSpecializedDoctors(specialization);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrieving doctors by specialization '{specialization}': {ex.Message}");
+                return Enumerable.Empty<Doctor>();
+            }
+        }
+
+        public Doctor? GetDoctor(int id)
+        {
+            if (id <= 0)
+            {
+                Console.WriteLine("Invalid doctor ID.");
+                return null;
+            }
+
+            try
+            {
+                return _doctorRepository.Get(id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrieving doctor with ID {id}: {ex.Message}");
+                return null;
+            }
+        }
+
+        public Doctor? UpdateDoctor(int id, Doctor doctor)
+        {
+            if (id <= 0)
+            {
+                Console.WriteLine("Invalid doctor ID.");
+                return null;
+            }
+
+            if (!ValidateDoctor(doctor, out string errorMessage))
+            {
+                Console.WriteLine($"Validation failed: {errorMessage}");
+                return null;
+            }
+
+            try
+            {
+                return _doctorRepository.Update(id, doctor);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while updating doctor with ID {id}: {ex.Message}");
+                return null;
+            }
+        }
+        public bool DeleteDoctor(int id)
+        {
+            if (id <= 0)
+            {
+                Console.WriteLine("Invalid doctor ID.");
+                return false;
+            }
+
+            try
+            {
+                _doctorRepository.Delete(id);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while deleting doctor with ID {id}: {ex.Message}");
+                return false;
+            }
+        }
+    }
+}
+
+================================================================================
+
+using HospitalModelLibrary;
+
+namespace HospitalBLLLibrary
+{
+    public interface IAppointmentService
+    {
+        Appointment? BookAppointment(Appointment appointment);
+        IEnumerable<Appointment> GetAllAppointments();
+        Appointment? GetAppointment(int id);
+        Appointment? UpdateAppointment(int id, Appointment appointment);
+        bool CancelAppointment(int id);
+    }
+}
+
+====================================================================================
+
+using HospitalModelLibrary;
+using HospitalDALLibrary;
+
+namespace HospitalBLLLibrary
+{
+    public class AppointmentService : IAppointmentService
+    {
+        private readonly IRepository<int, Appointment> _appointmentRepository;
+
+        public AppointmentService(IRepository<int, Appointment> appointmentRepository)
+        {
+            _appointmentRepository = appointmentRepository;
+        }
+
+        private bool ValidateAppointment(Appointment appointment, out string errorMessage)
+        {
+            if (appointment.PatientId <= 0)
+            {
+                errorMessage = "Invalid Patient ID.";
+                return false;
+            }
+
+            if (appointment.DoctorId <= 0)
+            {
+                errorMessage = "Invalid Doctor ID.";
+                return false;
+            }
+
+            if (appointment.AppointmentDateTime == default)
+            {
+                errorMessage = "Invalid appointment date and time.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(appointment.AppointmentReason))
+            {
+                errorMessage = "Appointment reason cannot be empty.";
+                return false;
+            }
+
+            errorMessage = string.Empty;
+            return true;
+        }
+
+        public Appointment? BookAppointment(Appointment appointment)
+        {
+            if (!ValidateAppointment(appointment, out string errorMessage))
+            {
+                Console.WriteLine($"Validation failed: {errorMessage}");
+                return null;
+            }
+
+            try
+            {
+                return _appointmentRepository.Add(appointment);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while booking appointment: {ex.Message}");
+                return null;
+            }
+        }
+
+        public IEnumerable<Appointment> GetAllAppointments()
+        {
+            try
+            {
+                return _appointmentRepository.GetAll();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrieving appointments: {ex.Message}");
+                return Enumerable.Empty<Appointment>();
+            }
+        }
+
+        public Appointment? GetAppointment(int id)
+        {
+            if (id <= 0)
+            {
+                Console.WriteLine("Invalid appointment ID.");
+                return null;
+            }
+
+            try
+            {
+                return _appointmentRepository.Get(id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrieving appointment with ID {id}: {ex.Message}");
+                return null;
+            }
+        }
+
+        public Appointment? UpdateAppointment(int id, Appointment appointment)
+        {
+            if (id <= 0)
+            {
+                Console.WriteLine("Invalid appointment ID.");
+                return null;
+            }
+
+            if (!ValidateAppointment(appointment, out string errorMessage))
+            {
+                Console.WriteLine($"Validation failed: {errorMessage}");
+                return null;
+            }
+
+            try
+            {
+                return _appointmentRepository.Update(id, appointment);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while updating appointment with ID {id}: {ex.Message}");
+                return null;
+            }
+        }
+
+        public bool CancelAppointment(int id)
+        {
+            if (id <= 0)
+            {
+                Console.WriteLine("Invalid appointment ID.");
+                return false;
+            }
+
+            try
+            {
+                _appointmentRepository.Delete(id);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while canceling appointment with ID {id}: {ex.Message}");
+                return false;
+            }
+        }
+    }
+}
+
+

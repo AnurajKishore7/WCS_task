@@ -1,0 +1,182 @@
+namespace HospitalModelLibrary
+{
+    public class Patient
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Gender { get; set; } = string.Empty;
+        public int Age { get; set; }
+        public string Mobile { get; set; } = string.Empty;
+
+        public Patient() { }
+
+        public Patient(string name, string gender, int age, string mobile)
+        {
+            Name = name;
+            Gender = gender;
+            Age = age;
+            Mobile = mobile;
+        }
+
+        public Patient(int id, string name, string gender, int age, string mobile) : this(name, gender, age, mobile)
+        {
+            Id = id;
+        }
+
+        public override string ToString()
+        {
+            return $"Id: {Id}\nName: {Name}\nGender: {Gender}\nAge: {Age}\nMobile: {Mobile}";
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null || !(obj is Patient))
+                return false;
+
+            Patient other = (Patient)obj;
+            return this.Id == other.Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+    }
+}
+
+=======================================================================
+
+namespace HospitalModelLibrary
+{
+    public class Doctor
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Gender { get; set; } = string.Empty;
+        public int Age { get; set; }
+        public string Specialization { get; set; } = string.Empty;
+        public string Mobile { get; set; } = string.Empty;
+
+        public Doctor() { }
+
+        public Doctor(string name, string gender, int age, string specialization, string mobile)
+        {
+            Name = name;
+            Gender = gender;
+            Age = age;
+            Specialization = specialization;
+            Mobile = mobile;
+        }
+
+        public Doctor(int id, string name, string gender, int age, string specialization, string mobile) : this(name, gender, age, specialization, mobile)
+        {
+            Id = id;
+        }
+
+        public override string ToString()
+        {
+            return $"Id: {Id}\nName: {Name}\nGender: {Gender}\nAge: {Age}\nSpecialization: {Specialization}\nMobile: {Mobile}";
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null || !(obj is Doctor))
+                return false;
+            Doctor other = (Doctor)obj;
+            return this.Id == other.Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+    }
+}
+
+==========================================================================
+
+namespace HospitalModelLibrary
+{
+    public class Appointment
+    {
+        public int Id { get; set; }
+        public int PatientId { get; set; }
+        public int DoctorId { get; set; }
+        public DateTime AppointmentDateTime { get; set; }
+        public string AppointmentReason { get; set; } = string.Empty;
+
+        public Appointment() { }
+
+        public Appointment(int patientId, int doctorId, DateTime appointmentDateTime, string appointmentReason)
+        {
+            PatientId = patientId;
+            DoctorId = doctorId;
+            AppointmentDateTime = appointmentDateTime;
+            AppointmentReason = appointmentReason;
+        }
+        public Appointment(int id, int patientId, int doctorId, DateTime appointmentDateTime, string appointmentReason) : this(patientId, doctorId, appointmentDateTime, appointmentReason)
+        {
+            Id = id;
+        }
+
+        public override string ToString()
+        {
+            return $"Id: {Id}\nPatientId: {PatientId}\nDoctorId: {DoctorId}\nAppointment Date and Time: {AppointmentDateTime}\nAppointment Reason: {AppointmentReason}";
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null || !(obj is Appointment))
+                return false;
+            Appointment other = (Appointment)obj;
+            return this.Id == other.Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+    }
+}
+
+=============================================================================
+
+namespace HospitalModelLibrary
+{
+    public class EmptyCollectionException : Exception
+    {
+        private readonly string _message;
+        public EmptyCollectionException()
+        {
+            _message = "The collection is empty";
+        }
+        public EmptyCollectionException(string message)
+        {
+            _message = message;
+        }
+        public override string Message => _message;
+
+    }
+}
+
+=================================================================================
+
+namespace HospitalModelLibrary
+{
+    public class CannotFindEntityException : Exception
+    {
+        private readonly string _message;
+        public CannotFindEntityException()
+        {
+            _message = "Cannot find the entity";
+        }
+        public CannotFindEntityException(string message)
+        {
+            _message = message;
+        }
+        public override string Message => _message;
+    }
+}
+
+
+
