@@ -1,0 +1,84 @@
+namespace DoctorAppointmentApp.Entities
+{
+    public class Patient
+    {
+        //Properties
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Gender { get; set; } = string.Empty;
+        public int Age { get; set; }
+        public string Mobile { get; set; } = string.Empty;
+
+        //Navigation Property
+        public ICollection<Appointment>? Appointments { get; set; }
+
+        public override string ToString()
+        {
+            return $@"PatientId: {Id}
+                Name: {Name}
+                Gender: {Gender}
+                Age: {Age}
+                Mobile: {Mobile}";
+        }
+    }
+}
+
+------------------------------------------------------------------
+
+namespace DoctorAppointmentApp.Entities
+{
+    public class Doctor
+    {
+        //Properties
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Gender { get; set; } = string.Empty;
+        public string Specialization { get; set; } = string.Empty;
+        public string Mobile { get; set; } = string.Empty;
+        public string Availability { get; set; } = string.Empty;
+
+        //Navigation Propery
+        public ICollection<Appointment>? Appointments { get; set; }
+
+        public override string ToString()
+        {
+            return $@"DoctorId: {Id}
+                Name: {Name}
+                Gender: {Gender}
+                Specializatin: {Specialization}
+                Mobile: {Mobile}
+                Availability: {Availability}";
+        }
+    }
+}
+
+------------------------------------------------------------------------
+
+namespace DoctorAppointmentApp.Entities
+{
+    public class Appointment
+    {
+        //Properties
+        public int Id { get; set; }
+        public  DateTime AppointmentDateTime { get; set; }
+        public int PatientId {  get; set; } //foreign key
+        public int DoctorId { get; set; } //foreign key
+        public string AppointmentReason { get; set; } = string.Empty;
+
+        //Navigation Properties
+        public Patient? Patient { get; set; }
+        public Doctor? Doctor { get; set; }
+
+        public override string ToString()
+        {
+            return $@"AppointmentId: {Id}
+                ScheduledAt: {AppointmentDateTime}
+                PatientId: {PatientId}
+                DoctorId: {DoctorId}
+                AppointmentReason: {AppointmentReason}";
+        }
+
+    }
+}
+
+
